@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
-const cors = require('cors');
-const fetch = require('node-fetch');
+// const cors = require('cors');
+// const fetch = require('node-fetch');
 const clientURL = "http://ivy.and.tymurblog.com"
 // const clientURL = "http://127.0.0.1:5501" //for testing
 const getPixelsAPI = "/getPixels.php"

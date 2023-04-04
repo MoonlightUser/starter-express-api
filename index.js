@@ -26,6 +26,10 @@ app.post('/my-sql-get', (req, res) => {
       });   
 });
 
+app.post('/', (req, res) => {
+  console.log("server is running");
+});
+
 // app.post('/my-sql-post', (req, res) => {
 //   console.log("I was triggered to post data");
 //   safePixel(res)

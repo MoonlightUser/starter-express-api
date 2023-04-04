@@ -8,12 +8,9 @@ const getPixelsAPI = "/getPixels.php"
 const safePixelAPI = "/insertPixels.php"
 
 app.use(express.static('public'));
-app.use(cors({
-    origin: clientURL,
-}));
-app.listen(3000, () => {
-    console.log('Express intro running on localhost:3000');
-});
+// app.use(cors({
+//     origin: clientURL,
+// }));
 
 app.post('/my-sql-get', (req, res) => {
   console.log("I was triggered to get data");
@@ -28,6 +25,7 @@ app.post('/my-sql-get', (req, res) => {
 
 app.post('/', (req, res) => {
   console.log("server is running");
+  res.send('Yo!')
 });
 
 // app.post('/my-sql-post', (req, res) => {

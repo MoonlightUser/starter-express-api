@@ -6,7 +6,8 @@ const jsdom = require('jsdom')
 const dom = new jsdom.JSDOM("")
 const $ = require('jquery')(dom.window)
 
-const CLIENT_URL = 'http://ivy.and.tymurblog.com' // test
+// const CLIENT_URL = 'http://ivy.and.tymurblog.com' // production url
+const CLIENT_URL = 'http://127.0.0.1:5500' // development url
 
 //php urls
 const CREATE_TOKEN_URL = '/diplom-chess/database/create-token.php'
@@ -18,7 +19,7 @@ app.use(bodyParser.json())
 // }));
 
 app.use(cors({
-    "origin": CLIENT_URL,
+    "origin": "*",
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
     "preflightContinue": false,
     "optionsSuccessStatus": 204

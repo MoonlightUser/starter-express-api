@@ -25,6 +25,7 @@ const constraints = {
 
 // const CLIENT_URL = 'http://ivy.and.tymurblog.com' // production url
 const CLIENT_URL = 'http://127.0.0.1:5500' // development url
+const PHP_URL = 'http://ivy.and.tymurblog.com'
 
 //php urls
 const CREATE_TOKEN_URL = '/database/create-token.php'
@@ -73,7 +74,7 @@ app.post('/create-token', (req, res) => {
     const username = JSON.stringify(req.body.username);
     const password = JSON.stringify(req.body.password);
     $.ajax({
-        url: CLIENT_URL+CREATE_TOKEN_URL,
+        url: PHP_URL+CREATE_TOKEN_URL,
         method:'post',
         data: { username, password},
         success: function (response) {
@@ -93,7 +94,7 @@ app.post('/read-token', (req, res) => {
     console.log("Just got a request to read token!") 
     const token = req.body.token
     $.ajax({
-        url: CLIENT_URL+READ_TOKEN_URL,
+        url: PHP_URL+READ_TOKEN_URL,
         method:'post',
         data: { token},
         success: function (response) {
@@ -111,7 +112,7 @@ app.post('/read-token', (req, res) => {
 app.post('/get-users', (req, res) => {
     console.log("Just got a request to get users!")
     $.ajax({
-        url: CLIENT_URL+GET_USERS_URL,
+        url: PHP_URL+GET_USERS_URL,
         method:'post',
         success: function (response) {
             console.log("success in get-users");
@@ -158,7 +159,7 @@ app.post('/add-user', (req, res) => {
     }
     else {
         $.ajax({
-            url: CLIENT_URL+GET_USERS_URL,
+            url: PHP_URL+GET_USERS_URL,
             method:'post',
             success: function (response) {
                 console.log("success in get-users");
@@ -180,7 +181,7 @@ app.post('/add-user', (req, res) => {
                 }
                 if (isUserValid) {
                     $.ajax({
-                        url: CLIENT_URL+ADD_USER_URL,
+                        url: PHP_URL+ADD_USER_URL,
                         method:'post',
                         data: {username, password, email},
                         success: function (response) {
@@ -209,7 +210,7 @@ app.post('/add-user', (req, res) => {
 app.post('/find-user', (req, res) => {
     console.log("Just got a request to login!")
     $.ajax({
-        url: CLIENT_URL+GET_USERS_URL,
+        url: PHP_URL+GET_USERS_URL,
         method:'post',
         success: function (response) {
             console.log("success in get-users");

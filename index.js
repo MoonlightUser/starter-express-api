@@ -23,8 +23,8 @@ const constraints = {
     },
 };
 
-const CLIENT_URL = 'http://ivy.and.tymurblog.com' // production url
-// const CLIENT_URL = 'http://127.0.0.1:5500' // development url
+// const CLIENT_URL = 'http://ivy.and.tymurblog.com' // production url
+const CLIENT_URL = 'http://127.0.0.1:5500' // development url
 
 //php urls
 const CREATE_TOKEN_URL = '/database/create-token.php'
@@ -39,7 +39,7 @@ app.use(bodyParser.json())
 // }));
 
 app.use(cors({
-    "origin": "*",
+    "origin": CLIENT_URL,
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
     "preflightContinue": false,
     "optionsSuccessStatus": 204

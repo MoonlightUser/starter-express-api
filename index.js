@@ -23,8 +23,8 @@ const constraints = {
     },
 };
 
-const CLIENT_URL = "https://diplom.tymurblog.com"; // production url
-// const CLIENT_URL = 'http://127.0.0.1:5500' // development url
+// const CLIENT_URL = "https://diplom.tymurblog.com"; // production url
+const CLIENT_URL = 'http://127.0.0.1:5500' // development url
 const PHP_URL = 'https://diplom.tymurblog.com/diplom-chess'
 
 //php urls

@@ -1,14 +1,10 @@
-const cors = require('cors');
 const express = require('express')
 const app = express()
+const Pusher = require('pusher')
 const bodyParser = require('body-parser')
 const jsdom = require('jsdom')
 const dom = new jsdom.JSDOM("")
 const $ = require('jquery')(dom.window)
-
-const validate = require("validate.js");
-const { contains } = require('jquery');
-const e = require('cors');
 const constraints = {
     username: {
         length: {
@@ -32,21 +28,29 @@ const CREATE_TOKEN_URL = '/database/create-token.php'
 const READ_TOKEN_URL = '/database/read-token.php'
 const GET_USERS_URL = '/database/get-users.php'
 const ADD_USER_URL = '/database/add-user.php'
+const GET_ROOM_URL = '/database/rooms/get-room.php'
+const GET_ROOMS_URL = '/database/rooms/get-rooms.php'
+const CREATE_ROOM_URL = '/database/rooms/create-room.php'
+const CHANGE_ROOM_URL = '/database/rooms/change-room.php'
+const CHANGE_ROOM_FULLY_URL = '/database/rooms/change-room-fully.php'
+const DELETE_ROOM_URL = '/database/rooms/delete-room.php'
+const CREATE_GAME_DATA_URL = '/database/game-data/create-game-data.php'
+const GET_GAME_DATA_URL = '/database/game-data/get-game-data.php'
+const UPDATE_GAME_DATA_URL = '/database/game-data/update-game-data.php'
+const DELETE_GAME_DATA_URL = '/database/game-data/delete-game-data.php'
+
+// pusher config
+const pusher = new Pusher({
+    appId: "1563257",
+    key: "37167ed4b28138b6fe32",
+    secret: "658bc35f8bdb05da7595",
+    cluster: "eu",
+    useTLS: true
+});
 
 app.use(bodyParser.urlencoded({extended: true})) 
 app.use(bodyParser.json()) 
-// app.use(cors({
-//     origin: CLIENT_URL,
-// }));
-
-// app.use(cors({
-//     "origin": CLIENT_URL,
-//     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-//     "preflightContinue": false,
-//     "optionsSuccessStatus": 204
-//   }))
 app.use(function (req, res, next) {
-
     // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', CLIENT_URL);
 
@@ -125,8 +129,6 @@ app.post('/get-users', (req, res) => {
         }
     });
 })
-
-
 
 app.post('/add-user', (req, res) => {
     let username = req.body.username
@@ -239,6 +241,311 @@ app.post('/find-user', (req, res) => {
         },
         error: function (xhr, status, error) {
             console.log("error in get-users");
+            console.log(xhr);
+            res.send(xhr)
+        }
+    });
+})
+
+app.post('/check-room', (req, res) => {
+    console.log("Just got a request to check room!")
+    const roomName = req.body.roomName;
+    console.log(roomName);
+    $.ajax({
+        url: PHP_URL+GET_ROOM_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log(response);
+            if (response === "[]") {
+                console.log("no such a room"); // no room with this name
+                res.send("1")
+            }
+            else {
+                console.log("room already exists"); // room already exists
+                res.send("2")
+            }
+
+        },
+        error: function (xhr, status, error) {
+            console.log("error"); // no room with this name
+            res.send("1")
+        }
+    });
+})
+
+app.post('/check-join-room', (req, res) => {
+    console.log("Just got a request to check room!")
+    const roomName = req.body.roomName;
+    const roomPassword = req.body.roomPassword;
+    $.ajax({
+        url: PHP_URL+GET_ROOM_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log(response);  
+            const room = JSON.parse(response);
+            if (room == false) {
+                console.log("no such a room"); // no room with this name
+                res.send("2")
+            }
+            else if (room[0].password !== roomPassword) {
+                console.log(room[0].password, roomPassword);
+                console.log("password is not correct"); // password is not correct
+                res.send("3")
+            }
+            else if (room[0].status !== "100") {
+                console.log("room is not open"); // room is full
+                res.send("4")
+            }
+            else {
+                console.log("room is open"); // room is open
+                res.send("1")
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log("error"); // no room with this name
+            res.send(xhr)
+        }
+    });
+})
+
+app.post('/join-room', (req, res) => {
+    console.log("Just got a request to join room!")
+    const roomName = req.body.roomName;
+    const userName = req.body.userName;
+    if (roomName === userName) {
+        console.log("room name and user name are the same");
+        res.send("3")
+    }
+    else {
+        $.ajax({
+            url: PHP_URL+CHANGE_ROOM_URL,
+            method:'post',
+            data: {roomName, userName},
+            success: function (response) {
+                console.log("success in join-room");
+                res.send("1")
+            },
+            error: function (xhr, status, error) {
+                console.log("error in join-room");
+                console.log(xhr);
+                res.send("2")
+            }
+        });
+    }
+})
+
+app.post('/create-room', (req, res) => {
+    console.log("Just got a request to create room!")
+    const roomName = req.body.roomName;
+    const roomPassword = req.body.roomPassword;
+    //php
+    $.ajax({
+        url: PHP_URL+CREATE_ROOM_URL,
+        method:'post',
+        data: {roomName, roomPassword},
+        success: function (response) {
+            console.log("success in create-room");
+            res.send("1")
+        },
+        error: function (xhr, status, error) {
+            console.log("error in create-room");
+            console.log(xhr);
+            res.send("2")
+        }
+    });
+})
+
+app.post('/change-room', (req, res) => {
+    console.log("Just got a request to change room!")
+    const roomName = req.body.roomName;
+    const userName = req.body.userName;
+    const status = req.body.status;
+    const password = req.body.password;
+    console.log(roomName, userName, status, password);
+    //php
+    $.ajax({
+        url: PHP_URL+CHANGE_ROOM_FULLY_URL,
+        method:'post',
+        data: {roomName, userName, status, password},
+        success: function (response) {
+            console.log("success in change-room");
+            res.send("1")
+        },
+        error: function (xhr, status, error) {
+            console.log("error in change-room");
+            console.log(xhr);
+            res.send("2")
+        }   
+    });
+})
+
+app.post('/get-room', (req, res) => {
+    console.log("Just got a request to get room!")
+    const roomName = req.body.roomName;
+    //php
+    $.ajax({
+        url: PHP_URL+GET_ROOM_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log("success in get-room");
+            res.send(response)
+        },
+        error: function (xhr, status, error) {
+            console.log("error in get-room");
+            console.log(xhr);
+            res.send(xhr)
+        }
+    });
+})
+
+app.post('/create-events', (req, res) => {
+    console.log("Just got a request to create events!")
+    const roomName = req.body.roomName;
+    pusher.trigger('publick-'+roomName, 'check ', {
+        'message': 'hello world'
+    });
+    res.send("1")
+})
+
+app.post('/send-message-to-pusher', (req, res) => {
+    console.log("Just got a request to send message to pusher!")
+    const roomName = req.body.roomName;
+    const message = req.body.message;
+    pusher.trigger('publick-'+roomName, 'message', {
+        'message': message
+    });
+    res.send("1")
+})
+
+app.post('/trigger-event-pusher', (req, res) => {
+    console.log("Just got a request to trigger event to pusher!")
+    const roomName = req.body.roomName;
+    const event = req.body.event;
+    const data = req.body.data;
+    pusher.trigger('publick-'+roomName, event, {
+        'message': data
+    });
+    res.send("1")
+})
+
+app.post('/create-game-data', (req, res) => {
+    console.log("Just got a request to create game data!")
+    const roomName = req.body.roomName;
+    const data = req.body.data;
+    //php
+    $.ajax({
+        url: PHP_URL+CREATE_GAME_DATA_URL,
+        method:'post',
+        data: {roomName, data},
+        success: function (response) {
+            console.log("success in create-game-data");
+            console.log(response);
+            res.send(response)
+        },
+        error: function (xhr, status, error) {
+            console.log("error in create-game-data");
+            console.log(xhr);
+            res.send("2")
+        }
+    });
+})
+
+app.post('/get-game-data', (req, res) => {
+    console.log("Just got a request to get game data!")
+    const roomName = req.body.roomName;
+    //php
+    $.ajax({
+        url: PHP_URL+GET_GAME_DATA_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log("success in get-game-data");
+            res.send(response)
+        },
+        error: function (xhr, status, error) {
+            console.log("error in get-game-data");
+            console.log(xhr);
+            res.send(xhr)
+        }
+    });
+})
+
+app.post('/update-game-data', (req, res) => {
+    console.log("Just got a request to update game data!")
+    const roomName = req.body.roomName;
+    const data = req.body.data;
+    //php
+    $.ajax({
+        url: PHP_URL+UPDATE_GAME_DATA_URL,
+        method:'post',
+        data: {roomName, data},
+        success: function (response) {
+            console.log("success in update-game-data");
+            res.send("1")
+        },
+        error: function (xhr, status, error) {
+            console.log("error in update-game-data");
+            console.log(xhr);
+            res.send("2")
+        }
+    });
+})
+
+app.post('/delete-game-data', (req, res) => {
+    console.log("Just got a request to delete game data!")
+    const roomName = req.body.roomName;
+    //php
+    $.ajax({
+        url: PHP_URL+DELETE_GAME_DATA_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log("success in delete-game-data");
+            res.send("1")
+        },
+        error: function (xhr, status, error) {
+            console.log("error in delete-game-data");
+            console.log(xhr);
+            res.send("2")
+        }
+    });
+})
+
+app.post('/delete-room', (req, res) => {
+    console.log("Just got a request to delete room!")
+    const roomName = req.body.roomName;
+    //php
+    $.ajax({
+        url: PHP_URL+DELETE_ROOM_URL,
+        method:'post',
+        data: {roomName},
+        success: function (response) {
+            console.log("success in delete-room");
+            res.send("1")
+        },
+        error: function (xhr, status, error) {
+            console.log("error in delete-room");
+            console.log(xhr);
+            res.send("2")
+        }
+    });
+})
+
+app.post('/get-rooms', (req, res) => {
+    console.log("Just got a request to get rooms!")
+    //php
+    $.ajax({
+        url: PHP_URL+GET_ROOMS_URL,
+        method:'post',
+        success: function (response) {
+            console.log("success in get-rooms");
+            res.send(response)
+        },
+        error: function (xhr, status, error) {
+            console.log("error in get-rooms");
             console.log(xhr);
             res.send(xhr)
         }
